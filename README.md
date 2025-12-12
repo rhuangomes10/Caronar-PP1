@@ -24,7 +24,7 @@ O foco principal é oferecer uma alternativa mais enxuta, com taxas menores e fu
 
 ### 1. **Clonar o repositório**
 ```bash
-[git clone https://github.com/rhuangomes10/Caronar-PP1.git]
+git clone https://github.com/rhuangomes10/Caronar-PP1.git
 ```
 
 ### 2. **Entrar na pasta do projeto**
