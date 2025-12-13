@@ -27,7 +27,7 @@ app.use('/bootstrap', express.static(path.join(__dirname, '../../node_modules/bo
 
 //Engine do Handlebars
 app.engine("handlebars", exphbs.engine({
-    defaultLayout: false,
+    defaultLayout: 'main',
     layoutsDir: path.join(__dirname, "../../views/layouts"),
     partialsDir: path.join(__dirname, "../../views/partials")
 }));
@@ -79,6 +79,24 @@ app.post("/cadastro", urlencodedParser, (req, res) => {
     console.error(error);
     res.send("Erro ao criar o usuário");
   }
+});
+
+//Metodo para atualizar dados
+app.post("/atualizar", urlencodedParser, async (req,res) =>{
+  await Usuario.update({cadastroNome, cadastroEmail, cadastroData, cadastroSenha},{
+      where:{
+        id: id
+      }
+  })
+});
+
+//Metodo para deletar conta
+app.post("/deletar", urlencodedParser, async (req,res) =>{
+  await Usuario.destroy({
+      where:{
+        id: id
+      }
+  })
 });
 //Funcionamento do Banco de dados
 async function iniciar() {
