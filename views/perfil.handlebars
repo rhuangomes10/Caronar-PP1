@@ -1,9 +1,26 @@
-<section>
-    <a href="">Atualizar Perfil</a>
-</section>
-<section>
-    <a href="">Virar motorista</a>
-</section>
-<section>
-    <a href="">Deletar Conta</a style="color:black">
-</section>
+<div class="main-container">
+
+  <div class="perfil-topo">
+    <img src="{{usuario.fotoPerfil}}" class="perfil-img">
+    
+    <div class="perfil-info">
+      <strong>{{usuario.nome}}</strong>
+      <p>{{usuario.idade}} anos</p>
+      <p>Passageiro</p>
+      <p>{{usuario.email}}</p>
+    </div>
+  </div>
+
+  <div class="card-acao">
+    <a href="/atualizarPerfil" class="text-white text-decoration-none">
+      Atualizar Informações
+    </a>
+  </div>
+
+  <div class="card-acao">Virar Motorista</div>
+  <div class="card-acao"><form action="/deletar" method="POST" onsubmit="return confirm('Tem certeza que deseja deletar sua conta?');">
+        <button type="submit" style="color:black">Deletar Conta</button>
+    </form></div>
+</div>
+<div class="card-acao"><form action="/logout" method="POST">
+        <button type="submit">Sair</button></div>

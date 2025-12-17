@@ -15,6 +15,13 @@ const sequelize = require("./database.js");
 //Criptografia
 const bcrypt = require("bcrypt");
 
+//Multer (multimídia)
+const multer = require("multer");
+
+const upload = multer({
+  dest: "public/uploads/"
+});
+
 //Ler os dados
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
@@ -23,6 +30,12 @@ app.use(express.static(path.join(__dirname, "../../public")));
 
 //Bootstrap
 app.use('/bootstrap', express.static(path.join(__dirname, '../../node_modules/bootstrap/dist')));
+
+//Sessão
+const session = require("express-session");
+app.use(session({secret: "segredo-super-seguro", resave: false, saveUninitialized: false,}));
+
+
 
 
 //Engine do Handlebars
@@ -61,13 +74,14 @@ app.get("/config" , (req,res) =>{
     res.render("config")
 })
 
+app.get("/atualizarPerfil" , (req,res) =>{
+    res.render("atualizarPerfil")
+})
+
 //Metodo de cadastro
 app.post("/cadastro", urlencodedParser, (req, res) => {
   try {
-    let cadastroNome = req.body.cadastroNome;
-    let cadastroEmail = req.body.cadastroEmail;
-    let cadastroData = req.body.cadastroData;
-    let cadastroSenha = req.body.cadastroSenha;
+    const {cadastroNome , cadastroEmail , cadastroData , cadastroSenha} = req.body
     let novoUsuario = Usuario.create({
       nome: cadastroNome,
       email: cadastroEmail,
@@ -81,27 +95,117 @@ app.post("/cadastro", urlencodedParser, (req, res) => {
   }
 });
 
-//Metodo para atualizar dados
-app.post("/atualizar", urlencodedParser, async (req,res) =>{
-  await Usuario.update({cadastroNome, cadastroEmail, cadastroData, cadastroSenha},{
-      where:{
-        id: id
-      }
-  })
+//Método de Login
+app.post("/login",urlencodedParser ,async (req, res) => {
+  const { loginEmail, loginSenha } = req.body;
+
+  const usuario = await Usuario.findOne({
+    where: { email: loginEmail },
+  });
+
+  if (!usuario) {
+    return res.send("Usuário ou senha inválidos");
+  }
+
+  const senhaValida = await bcrypt.compare(loginSenha, usuario.senha);
+
+  if (!senhaValida) {
+    return res.send("Usuário ou senha inválidos");
+  }
+
+//Sessão
+  req.session.usuarioId = usuario.id;
+
+  res.redirect("/index");
+  
 });
 
-//Metodo para deletar conta
-app.post("/deletar", urlencodedParser, async (req,res) =>{
-  await Usuario.destroy({
-      where:{
-        id: id
-      }
-  })
+function verificarLogin(req, res, next) {
+  if (!req.session.usuarioId) {
+    return res.redirect("/");
+  }
+  next();
+}
+
+// Página inicial
+app.get("/index", verificarLogin, (req, res) => {
+  res.render("index");
 });
+
+// Perfil
+app.get("/perfil", verificarLogin, async (req, res) => {
+  const usuario = await Usuario.findByPk(req.session.usuarioId);
+
+  res.render("perfil", {
+    usuario,
+  });
+});
+
+// Configurações
+app.get("/config", verificarLogin, (req, res) => {
+  res.render("config");
+});
+
+//Método de atualizar dados
+app.post("/atualizar", verificarLogin, urlencodedParser, async (req, res) => {
+  const { cadastroNome, cadastroEmail, cadastroData, cadastroSenha } = req.body;
+
+  let dados = {};
+
+  if (cadastroNome && cadastroNome.trim() !== "") {
+    dados.nome = cadastroNome;
+  }
+
+  if (cadastroEmail && cadastroEmail.trim() !== "") {
+    dados.email = cadastroEmail;
+  }
+
+  if (cadastroData && cadastroData.trim() !== "") {
+    dados.dataNasc = cadastroData;
+  }
+
+  if (cadastroSenha && cadastroSenha.trim() !== "") {
+    dados.senha = await bcrypt.hash(cadastroSenha, 10);
+  }
+  if (req.file)
+      dados.fotoPerfil = "/uploads/" + req.file.filename;
+
+  // 🔒 Evita update vazio
+  if (Object.keys(dados).length === 0) {
+    return res.redirect("/perfil");
+  }
+
+  await Usuario.update(dados, {
+    where: { id: req.session.usuarioId },
+  });
+
+  res.redirect("/perfil");
+});
+
+
+//Método para deletar a conta
+app.post("/deletar", verificarLogin, async (req, res) => {
+  await Usuario.destroy({
+    where: { id: req.session.usuarioId },
+  });
+
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
+});
+
+//Método de logout
+
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {
+    res.redirect("/");
+  });
+});
+
 //Funcionamento do Banco de dados
 async function iniciar() {
   try {
-    await sequelize.sync({ force: true });
+    await sequelize.sync({ alter: true });
   } catch (error) {
     console.log(error);
   }
