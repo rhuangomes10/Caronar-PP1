@@ -8,21 +8,27 @@
   <title>Cadastro</title>
 </head>
 <body>
-  <center>
-    <h1>Registro</h1>
+
+    <div class="limiter">
+        <div class="container-login100">
+            <div class="wrap-cadastro"> 
+                <h1>Registro</h1>
+            
+                <form action="/cadastro" method="post" id="domCadastro">
+                    <label for="cadastroNome">Nome do usuário</label>
+                    <input type="text" name="cadastroNome" id="cadastroNome" required />
+                    <label for="cadastroEmail">Email</label>
+                    <input type="email" name="cadastroEmail" id="cadastroEmail" required />
+                    <label for="cadastroData">Data de nascimento</label>
+                    <input type="date" name="cadastroData" id="cadastroData" />
+                    <label for="cadastroSenha">Senha</label>
+                    <input type="password" name="cadastroSenha" id="cadastroSenha" required/>
+                    <button type="submit" class="btn btn-light">Criar Conta</button>
+                </form>
+            </div>
+        </div>
+    </div>
   
-  <form action="/cadastro" method= "post" id="domCadastro">
-    <label for="cadastroNome">Nome do usuário</label><br />
-    <input type="text" name="cadastroNome" id="cadastroNome" required /><br /><br />
-    <label for="cadastroEmail">Email</label><br />
-    <input type="email" name="cadastroEmail" id="cadastroEmail" required /><br /><br />
-    <label for="cadastroData">Data de nascimento</label><br />
-    <input type="date" name="cadastroData" id="cadastroData" /><br /><br />
-    <label for="cadastroSenha">Senha</label><br />
-    <input type="password" name="cadastroSenha" id="cadastroSenha" required/><br /><br />
-    <button type="submit" class="btn btn-light">Criar Conta</button>
-  </form>
-  </center>
   
 </body>
 </html>

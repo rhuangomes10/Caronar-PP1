@@ -1,4 +1,102 @@
-body{
-    background-color: #e65151;
-    color: white;
+/*
+ * REGRA ESSENCIAL: SOBRESCRITA DO FUNDO
+ *
+ * O template main.css define:
+ * .container-login100 { background: #f2f2f2; }
+ *
+ * Para aplicar o fundo vermelho coral à página inteira:
+ */
+.container-login100 {
+    background-color: #ea5455 !important; /* Cor vermelha coral exata. Usei !important para garantir a sobrescrita. */
+    padding-top: 50px; /* Adiciona um espaço no topo, se necessário */
+    padding-bottom: 50px;
+    min-height: 100vh;
+}
+
+/* Garante que o texto principal seja branco e use a fonte Poppins */
+body {
+    background-color: #ea5455 !important; /* Fundo do body também como fallback */
+    color: white !important;
+    font-family:Arial, Helvetica, sans-serif !important;
+}
+
+
+/*
+ * ESTILIZAÇÃO DO CONTEÚDO
+ *
+ * Você pode envolver o seu formulário em uma div com a classe 'wrap-login100' do template
+ * e usar as classes dele, ou estilizar os elementos nativos:
+ */
+
+/* Título */
+h1 {
+    font-family: Arial, Helvetica, sans-serif !important;
+    color: white !important;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Labels */
+label {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 1.1rem;
+    color: white !important;
+    margin-top: 15px;
+    display: block; /* Garante que cada label fique em sua própria linha */
+    text-align: left;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="password"] {
+    width: 100% !important; /* Ocupa a largura total do container */
+    padding: 10px 15px !important;
+    border-radius: 8px !important; /* Bordas arredondadas da imagem de ref */
+    border: none !important;
+    margin-bottom: 20px !important;
+    background-color: white !important;
+    color: #333 !important;
+    height: 50px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Botão "Criar Conta" */
+.btn.btn-light {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 1.5rem !important;
+    color: black !important;
+    background-color: white !important;
+    width: 100% !important;
+    padding: 15px 0 !important;
+    border-radius: 12px !important;
+    margin-top: 30px !important;
+    margin-left: 0 !important; /* Remove o margin-left fixo que estava causando problemas */
+    transition: all 0.3s;
+}
+
+.btn.btn-light:hover {
+    background-color: #f0f0f0 !important;
+    transform: scale(1.01);
+}
+
+/* Oculta as quebras de linha (<br>) do HTML */
+br {
+    display: none;
+}
+
+/* Remove a classe .secaoCSS antiga que tinha margens fixas */
+.secaoCSS {
+    margin: 0 !important;
+    border: none !important;
+    /* Essa classe não deve ser usada se você usar o wrap-login100 */
+}
+
+/* Se você quiser usar a centralização do template */
+.wrap-cadastro {
+    width: 90%;
+    max-width: 360px; /* Largura do formulário */
+    margin: 0 auto;
 }
