@@ -10,6 +10,7 @@ const exphbs = require("express-handlebars");
 
 //Banco de dados
 const Usuario = require("../../models/Usuario.js");
+const Corrida = require("../../models/Corrida.js");
 const sequelize = require("./database.js");
 
 //Criptografia
@@ -18,9 +19,17 @@ const bcrypt = require("bcrypt");
 //Multer (multimídia)
 const multer = require("multer");
 
-const upload = multer({
-  dest: "public/uploads/"
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../../public/uploads"));
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, Date.now() + ext);
+  },
 });
+
+const upload = multer({ storage });
 
 //Ler os dados
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
@@ -36,7 +45,12 @@ const session = require("express-session");
 app.use(session({secret: "segredo-super-seguro", resave: false, saveUninitialized: false,}));
 
 
-
+//Meio de transporte
+const transportes = {
+  moto: { nome: "Moto", precoKm: 1.5 },
+  carro: { nome: "Carro", precoKm: 2.5 },
+  van: { nome: "Van", precoKm: 4.0 },
+};
 
 //Engine do Handlebars
 app.engine("handlebars", exphbs.engine({
@@ -65,17 +79,48 @@ app.get("/index", (req, res) => {
 });
 
 //Rota da Página de perfil
-app.get("/perfil" , (req,res) =>{
-    res.render("perfil")
-})
+app.get("/perfil", verificarLogin, async (req, res) => {
+  const usuario = await Usuario.findByPk(req.session.usuarioId, {
+    raw: true
+  });
+
+  if (!usuario) {
+    return res.redirect("/");
+  }
+
+  // CALCULA IDADE AQUI
+  let idade = null;
+  if (usuario.dataNasc) {
+    const hoje = new Date();
+    const nasc = new Date(usuario.dataNasc);
+    idade = hoje.getFullYear() - nasc.getFullYear();
+    const m = hoje.getMonth() - nasc.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) {
+      idade--;
+    }
+  }
+
+  res.render("perfil", {
+    usuario: {
+      ...usuario,
+      idade,
+      fotoPerfil: usuario.fotoPerfil || "/img/user-default.png"
+    }
+  });
+});
+
 
 //Rota da Página de configurações
 app.get("/config" , (req,res) =>{
     res.render("config")
 })
-
+//Rota da Página para atulizar o perfil
 app.get("/atualizarPerfil" , (req,res) =>{
     res.render("atualizarPerfil")
+})
+//Rota da página de solicitação de corrida
+app.get("/solicitarCorrida" , (req,res) => {
+    res.render("solicitarCorrida", {layout: "solicitarCorrida"})
 })
 
 //Metodo de cadastro
@@ -146,9 +191,20 @@ app.get("/config", verificarLogin, (req, res) => {
   res.render("config");
 });
 
+// Histórico de corridas
+app.get("/historico", verificarLogin, async (req, res) => {
+  const corridas = await Corrida.findAll({
+    where: { usuarioId: req.session.usuarioId },
+    order: [["createdAt", "DESC"]],
+  });
+
+  res.render("historico", { corridas });
+});
+
+
 //Método de atualizar dados
-app.post("/atualizar", verificarLogin, urlencodedParser, async (req, res) => {
-  const { cadastroNome, cadastroEmail, cadastroData, cadastroSenha } = req.body;
+app.post("/atualizar", verificarLogin, urlencodedParser, upload.single("fotoPerfil"), async (req, res) => {
+  const {fotoPerfil, cadastroNome, cadastroEmail, cadastroData, cadastroSenha } = req.body;
 
   let dados = {};
 
@@ -202,6 +258,44 @@ app.post("/logout", (req, res) => {
   });
 });
 
+// Preços
+app.post("/calcular-precos", verificarLogin, (req, res) => {
+  const { distanciaKm } = req.body;
+
+  const opcoes = Object.keys(transportes).map(tipo => ({
+    tipo,
+    nome: transportes[tipo].nome,
+    preco: (distanciaKm * transportes[tipo].precoKm).toFixed(2),
+  }));
+
+  res.json(opcoes);
+});
+
+// Finalizar corrida
+app.post("/finalizar-corrida", verificarLogin, async (req, res) => {
+  const { partida, chegada, distanciaKm, tipo, preco } = req.body;
+
+  const motoristas = {
+    moto: { nome: "Carlos", avaliacao: 4.9 },
+    carro: { nome: "João", avaliacao: 4.8 },
+    van: { nome: "Marcos", avaliacao: 4.7 },
+  };
+
+  await Corrida.create({
+    usuarioId: req.session.usuarioId,
+    partida: "Localização atual",
+    chegada: `${chegada.lat}, ${chegada.lng}`,
+    distanciaKm,
+    tipoTransporte: tipo,
+    preco,
+    motoristaNome: motoristas[tipo].nome,
+    avaliacaoMotorista: motoristas[tipo].avaliacao,
+  });
+
+  res.redirect("/index");
+});
+
+
 //Funcionamento do Banco de dados
 async function iniciar() {
   try {
@@ -210,6 +304,7 @@ async function iniciar() {
     console.log(error);
   }
 }
+
 
 iniciar();
 //Servidor Rodando
