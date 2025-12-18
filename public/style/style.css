@@ -100,3 +100,23 @@ br {
     max-width: 360px; /* Largura do formulário */
     margin: 0 auto;
 }
+
+button{
+    background-color: #ff5d5d;
+    color: white;
+    margin: 20px;
+    
+}
+
+footer{
+    background-color: #ff5d5d;
+    width: 200px;
+}
+#icon-central{
+    background-color: white;
+}
+
+.icones{
+    width: 60px;
+    
+}
