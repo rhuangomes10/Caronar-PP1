@@ -1,6 +1,5 @@
 const Sequelize = require("sequelize");
-const sequelize = require("../src/config/database.js");
-const { Hooks } = require("sequelize/lib/hooks");
+const sequelize = require("../src/config/database");
 const bcrypt = require("bcrypt");
 
 const Usuario = sequelize.define(
@@ -21,30 +20,32 @@ const Usuario = sequelize.define(
       allowNull: false,
       unique: true,
       validate: {
-        isEmail: {
-          msg: "O email deve ser válido",
-        },
-        notEmpty: {
-          msg: "O email não pode ser vazio",
-        },
+        isEmail: true,
+        notEmpty: true,
       },
     },
-    dataNasc:{
-     type: Sequelize.DATEONLY,
-     allowNull: false 
+    dataNasc: {
+      type: Sequelize.DATEONLY,
+      allowNull: false,
     },
     senha: {
       type: Sequelize.STRING,
       allowNull: false,
     },
+    fotoPerfil: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
   },
+
   {
     timestamps: false,
     hooks: {
       beforeCreate: async (usuario) => {
         usuario.senha = await bcrypt.hash(usuario.senha, 10);
-      }
-    }
+      },
+    },
   }
 );
+
 module.exports = Usuario;
