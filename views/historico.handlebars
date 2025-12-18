@@ -1,0 +1,11 @@
+<h2>Histórico de Corridas</h2>
+
+{{#each corridas}}
+  <div class="corrida">
+    <p>{{partida}} → {{chegada}}</p>
+    <p>{{tipoTransporte}} • R$ {{preco}}</p>
+    <p>Motorista: {{motoristaNome}} ⭐ {{avaliacaoMotorista}}</p>
+  </div>
+{{else}}
+  <p>Nenhuma corrida realizada.</p>
+{{/each}}
