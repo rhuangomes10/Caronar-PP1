@@ -1,0 +1,80 @@
+/* ===== RESET ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ===== FUNDO ===== */
+body {
+  background-color: #ff5c5c;
+  height: 100vh;
+}
+
+/* ===== CONTAINER ===== */
+.corrida-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+/* ===== BARRA SUPERIOR ===== */
+.campo {
+  background-color: #ff6a6a;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+/* ===== INPUTS ===== */
+.campo input {
+  width: 90%;
+  max-width: 520px;
+  height: 42px;
+  background-color: #ff6a6a;
+  border: 1.5px solid #8b0000;
+  border-radius: 10px;
+  padding: 0 14px;
+  color: white;
+  font-size: 15px;
+}
+
+.campo input::placeholder {
+  color: #fff;
+}
+
+/* ===== ESPAÇO ENTRE PARTIDA / CHEGADA ===== */
+.campo + .campo {
+  border-top: 6px solid rgba(0, 0, 0, 0.05);
+}
+
+/* ===== MAPA ===== */
+#mapa {
+  flex: 1;
+  width: 100%;
+}
+
+/* ===== BARRA INFERIOR ===== */
+.info-corrida {
+  background-color: #ff6a6a;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ===== CAIXAS ===== */
+.info-corrida span {
+  background-color: #ff6a6a;
+  border: 1.5px solid #8b0000;
+  border-radius: 10px;
+  padding: 6px 18px;
+  color: white;
+  font-size: 14px;
+}
+
+/* ===== REMOVE ZOOM DO MAPA ===== */
+.leaflet-control-zoom {
+  display: none;
+}
