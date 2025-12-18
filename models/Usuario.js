@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 const sequelize = require("../src/config/database");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt"); // criptografia
 
 const Usuario = sequelize.define(
   "Usuario",
