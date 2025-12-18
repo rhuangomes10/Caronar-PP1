@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize");
 const sequelize = require("../src/config/database");
-const Usuario = require("./Usuario"); // IMPORTANTE
+const Usuario = require("./Usuario");
 
 const Corrida = sequelize.define("Corrida", {
   partida: {
