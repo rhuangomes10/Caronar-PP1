@@ -108,15 +108,71 @@ button{
     
 }
 
-footer{
-    background-color: #ff5d5d;
-    width: 200px;
-}
-#icon-central{
-    background-color: white;
+/* ===== MENU INFERIOR (ESTILO APP MOBILE) ===== */
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: #ff5d5d;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.icones{
-    width: 60px;
-    
+/* Container dos ícones */
+.app-container {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
 }
+
+/* Ícones laterais */
+.app-container img {
+  width: 50px;
+  height: 50px;
+}
+
+/* Ícone central (HOME) */
+#icon-central {
+  background: white;
+  border-radius: 50%;
+  padding: 10px;
+  width: 70px !important;
+  height: 70px !important;
+  position: relative;
+  top: -25px; /* Faz ele "subir" como na imagem */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Remove qualquer margem extra */
+.menu-inferior,
+.home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ajuste para telas pequenas (celular) */
+@media (max-width: 480px) {
+  footer {
+    height: 75px;
+  }
+
+  #icon-central {
+    width: 65px !important;
+    height: 65px !important;
+  }
+}
+
+/* Espaço para não cobrir conteúdo */
+body {
+  padding-bottom: 90px;
+}
+
