@@ -38,12 +38,20 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 app.use(express.static(path.join(__dirname, "../../public")));
 
 //Bootstrap
-app.use('/bootstrap', express.static(path.join(__dirname, '../../node_modules/bootstrap/dist')));
+app.use(
+  "/bootstrap",
+  express.static(path.join(__dirname, "../../node_modules/bootstrap/dist"))
+);
 
 //Sessão
 const session = require("express-session");
-app.use(session({secret: "segredo-super-seguro", resave: false, saveUninitialized: false,}));
-
+app.use(
+  session({
+    secret: "segredo-super-seguro",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 //Meio de transporte
 const transportes = {
@@ -53,19 +61,21 @@ const transportes = {
 };
 
 //Engine do Handlebars
-app.engine("handlebars", exphbs.engine({
-    defaultLayout: 'main',
+app.engine(
+  "handlebars",
+  exphbs.engine({
+    defaultLayout: "main",
     layoutsDir: path.join(__dirname, "../../views/layouts"),
-    partialsDir: path.join(__dirname, "../../views/partials")
-}));
+    partialsDir: path.join(__dirname, "../../views/partials"),
+  })
+);
 
 app.set("view engine", "handlebars");
 app.set("views", path.join(__dirname, "../../views"));
 
-
 //Rota de login
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../../public/Login/login.html") );
+  res.sendFile(path.join(__dirname, "../../public/Login/login.html"));
 });
 
 //Rota de cadastro
@@ -75,13 +85,13 @@ app.get("/cadastro.html", (req, res) => {
 
 //Rota da Página inicial
 app.get("/index", (req, res) => {
-    res.render("index");
+  res.render("index");
 });
 
 //Rota da Página de perfil
 app.get("/perfil", verificarLogin, async (req, res) => {
   const usuario = await Usuario.findByPk(req.session.usuarioId, {
-    raw: true
+    raw: true,
   });
 
   if (!usuario) {
@@ -104,36 +114,49 @@ app.get("/perfil", verificarLogin, async (req, res) => {
     usuario: {
       ...usuario,
       idade,
-      fotoPerfil: usuario.fotoPerfil || "/img/user-default.png"
-    }
+      fotoPerfil: usuario.fotoPerfil || "/img/user-default.png",
+    },
   });
 });
 
-
 //Rota da Página de configurações
-app.get("/config" , (req,res) =>{
-    res.render("config")
-})
+app.get("/config", (req, res) => {
+  res.render("config");
+});
 //Rota da Página para atulizar o perfil
-app.get("/atualizarPerfil" , (req,res) =>{
-    res.render("atualizarPerfil")
-})
+app.get("/atualizarPerfil", (req, res) => {
+  res.render("atualizarPerfil" , {layout: "main"});
+});
 //Rota da página de solicitação de corrida
-app.get("/solicitarCorrida" , (req,res) => {
-    res.render("solicitarCorrida", {layout: "solicitarCorrida"})
-})
+app.get("/solicitarCorrida", (req, res) => {
+  res.render("solicitarCorrida", { layout: "corrida" });
+});
+//Rota de meio de transporte
+app.get("/meioTransporte", verificarLogin, (req, res) => {
+  res.render("meioTransporte", { layout: "corrida" });
+});
+//Rota de motorista encontrado
+app.get("/motoristaEncontrado", verificarLogin, (req, res) => {
+  res.render("motoristaEncontrado", { layout: "corrida" });
+});
+//Rota de pagamento
+app.get("/pagamento", verificarLogin, (req, res) => {
+  res.render("pagamento", { layout: "corrida" });
+});
 
 //Metodo de cadastro
 app.post("/cadastro", urlencodedParser, (req, res) => {
   try {
-    const {cadastroNome , cadastroEmail , cadastroData , cadastroSenha} = req.body
+    const { cadastroNome, cadastroEmail, cadastroData, cadastroSenha } =
+      req.body;
     let novoUsuario = Usuario.create({
       nome: cadastroNome,
       email: cadastroEmail,
       dataNasc: cadastroData,
       senha: cadastroSenha,
     });
-    res.send("Usuário criado com sucesso!");
+    console.log("Usuário criado com sucesso!");
+    res.redirect("/");
   } catch (error) {
     console.error(error);
     res.send("Erro ao criar o usuário");
@@ -141,7 +164,7 @@ app.post("/cadastro", urlencodedParser, (req, res) => {
 });
 
 //Método de Login
-app.post("/login",urlencodedParser ,async (req, res) => {
+app.post("/login", urlencodedParser, async (req, res) => {
   const { loginEmail, loginSenha } = req.body;
 
   const usuario = await Usuario.findOne({
@@ -149,20 +172,29 @@ app.post("/login",urlencodedParser ,async (req, res) => {
   });
 
   if (!usuario) {
-    return res.send("Usuário ou senha inválidos");
+    return res.send(`
+        <script>
+          alert("Usuário não encontrado!");
+          window.location.href = "/";
+        </script>
+      `);
   }
 
   const senhaValida = await bcrypt.compare(loginSenha, usuario.senha);
 
   if (!senhaValida) {
-    return res.send("Usuário ou senha inválidos");
+    return res.send(`
+        <script>
+          alert("Usuário não encontrado!");
+          window.location.href = "/";
+        </script>
+      `);
   }
 
-//Sessão
+  //Sessão
   req.session.usuarioId = usuario.id;
 
   res.redirect("/index");
-  
 });
 
 function verificarLogin(req, res, next) {
@@ -196,48 +228,61 @@ app.get("/historico", verificarLogin, async (req, res) => {
   const corridas = await Corrida.findAll({
     where: { usuarioId: req.session.usuarioId },
     order: [["createdAt", "DESC"]],
+    raw: true
   });
 
   res.render("historico", { corridas });
 });
 
 
+
+
 //Método de atualizar dados
-app.post("/atualizar", verificarLogin, urlencodedParser, upload.single("fotoPerfil"), async (req, res) => {
-  const {fotoPerfil, cadastroNome, cadastroEmail, cadastroData, cadastroSenha } = req.body;
+app.post(
+  "/atualizar",
+  verificarLogin,
+  urlencodedParser,
+  upload.single("fotoPerfil"),
+  async (req, res) => {
+    const {
+      fotoPerfil,
+      cadastroNome,
+      cadastroEmail,
+      cadastroData,
+      cadastroSenha,
+    } = req.body;
 
-  let dados = {};
+    let dados = {};
 
-  if (cadastroNome && cadastroNome.trim() !== "") {
-    dados.nome = cadastroNome;
+    if (cadastroNome && cadastroNome.trim() !== "") {
+      dados.nome = cadastroNome;
+    }
+
+    if (cadastroEmail && cadastroEmail.trim() !== "") {
+      dados.email = cadastroEmail;
+    }
+
+    if (cadastroData && cadastroData.trim() !== "") {
+      dados.dataNasc = cadastroData;
+    }
+
+    if (cadastroSenha && cadastroSenha.trim() !== "") {
+      dados.senha = await bcrypt.hash(cadastroSenha, 10);
+    }
+    if (req.file) dados.fotoPerfil = "/uploads/" + req.file.filename;
+
+    // 🔒 Evita update vazio
+    if (Object.keys(dados).length === 0) {
+      return res.redirect("/perfil");
+    }
+
+    await Usuario.update(dados, {
+      where: { id: req.session.usuarioId },
+    });
+
+    res.redirect("/perfil");
   }
-
-  if (cadastroEmail && cadastroEmail.trim() !== "") {
-    dados.email = cadastroEmail;
-  }
-
-  if (cadastroData && cadastroData.trim() !== "") {
-    dados.dataNasc = cadastroData;
-  }
-
-  if (cadastroSenha && cadastroSenha.trim() !== "") {
-    dados.senha = await bcrypt.hash(cadastroSenha, 10);
-  }
-  if (req.file)
-      dados.fotoPerfil = "/uploads/" + req.file.filename;
-
-  // 🔒 Evita update vazio
-  if (Object.keys(dados).length === 0) {
-    return res.redirect("/perfil");
-  }
-
-  await Usuario.update(dados, {
-    where: { id: req.session.usuarioId },
-  });
-
-  res.redirect("/perfil");
-});
-
+);
 
 //Método para deletar a conta
 app.post("/deletar", verificarLogin, async (req, res) => {
@@ -259,41 +304,57 @@ app.post("/logout", (req, res) => {
 });
 
 // Preços
-app.post("/calcular-precos", verificarLogin, (req, res) => {
+app.post("/calcular-precos", verificarLogin, express.json(), (req, res) => {
   const { distanciaKm } = req.body;
 
-  const opcoes = Object.keys(transportes).map(tipo => ({
+  const opcoes = Object.entries(transportes).map(([tipo, t]) => ({
     tipo,
-    nome: transportes[tipo].nome,
-    preco: (distanciaKm * transportes[tipo].precoKm).toFixed(2),
+    nome: t.nome,
+    preco: (distanciaKm * t.precoKm).toFixed(2),
   }));
 
   res.json(opcoes);
 });
 
 // Finalizar corrida
-app.post("/finalizar-corrida", verificarLogin, async (req, res) => {
-  const { partida, chegada, distanciaKm, tipo, preco } = req.body;
+const motoristas = {
+  moto: { nome: "Carlos", avaliacao: 4.9 },
+  carro: { nome: "João", avaliacao: 4.8 },
+  van: { nome: "Marcos", avaliacao: 4.7 },
+};
 
-  const motoristas = {
-    moto: { nome: "Carlos", avaliacao: 4.9 },
-    carro: { nome: "João", avaliacao: 4.8 },
-    van: { nome: "Marcos", avaliacao: 4.7 },
-  };
+app.post(
+  "/finalizar-corrida",
+  verificarLogin,
+  express.json(),
+  async (req, res) => {
+    try {
+      const { partida, chegada, distanciaKm, tipo, preco } = req.body;
 
-  await Corrida.create({
-    usuarioId: req.session.usuarioId,
-    partida: "Localização atual",
-    chegada: `${chegada.lat}, ${chegada.lng}`,
-    distanciaKm,
-    tipoTransporte: tipo,
-    preco,
-    motoristaNome: motoristas[tipo].nome,
-    avaliacaoMotorista: motoristas[tipo].avaliacao,
-  });
+      const motorista = motoristas[tipo];
 
-  res.redirect("/index");
-});
+      if (!motorista) {
+        return res.json({ sucesso: false });
+      }
+
+      await Corrida.create({
+        usuarioId: req.session.usuarioId,
+        partida: "Localização atual",
+        chegada: chegada.nome || `${chegada.lat}, ${chegada.lng}`,
+        distanciaKm,
+        tipoTransporte: tipo,
+        preco,
+        motoristaNome: motorista.nome,
+        avaliacaoMotorista: motorista.avaliacao,
+      });
+
+      res.json({ sucesso: true });
+    } catch (error) {
+      console.error(error);
+      res.json({ sucesso: false });
+    }
+  }
+);
 
 
 //Funcionamento do Banco de dados
@@ -304,7 +365,6 @@ async function iniciar() {
     console.log(error);
   }
 }
-
 
 iniciar();
 //Servidor Rodando

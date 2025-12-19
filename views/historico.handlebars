@@ -1,11 +1,17 @@
-<h2>Histórico de Corridas</h2>
+<div class="card-historico">
+  <a href="/index">← Voltar a Página Inicial</a>
+</div>
 
-{{#each corridas}}
-  <div class="corrida">
-    <p>{{partida}} → {{chegada}}</p>
-    <p>{{tipoTransporte}} • R$ {{preco}}</p>
-    <p>Motorista: {{motoristaNome}} ⭐ {{avaliacaoMotorista}}</p>
-  </div>
-{{else}}
-  <p>Nenhuma corrida realizada.</p>
-{{/each}}
+<div class="app-page">
+  <div class="app-header">Histórico de Corridas</div>
+
+  {{#each corridas}}
+    <div class="card-historico">
+      <p><strong>De:</strong> {{this.partida}}</p>
+      <p><strong>Para:</strong> {{this.chegada}}</p>
+      <p><strong>Preço:</strong> R$ {{this.preco}}</p>
+    </div>
+  {{/each}}
+</div>
+
+

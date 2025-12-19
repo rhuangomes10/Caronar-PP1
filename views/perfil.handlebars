@@ -1,34 +1,33 @@
-<div class="main-container">
+<div class="app-page">
 
   <div class="perfil-topo">
     <img src="{{usuario.fotoPerfil}}" class="perfil-img">
 
     <div class="perfil-info">
-
       <strong>{{usuario.nome}}</strong>
-      <p>{{usuario.idade}} anos</p>
-      <p>Passageiro</p>
       <p>{{usuario.email}}</p>
+      <p>Passageiro</p>
     </div>
   </div>
 
   <div class="card-acao">
-    <a href="/atualizarPerfil" class="text-white text-decoration-none">
-      Atualizar Informações
-    </a>
+    <a href="/atualizarPerfil">Atualizar Informações</a>
   </div>
 
   <div class="card-acao">
-    <form action="" onclick="return confirm('Função desativada');">
-      <button type="submit">Virar motorista</button>
-    </form></div>
+    Virar Motorista
+  </div>
+
   <div class="card-acao">
-    <form action="/deletar" method="POST" onsubmit="return confirm('Tem certeza que deseja deletar sua conta?');">
-      <button type="submit" style="color:black">Deletar Conta</button>
+    <form action="/deletar" method="POST" onsubmit="return confirm('Tem certeza?')">
+      <button type="submit" class="btn-perigo">Excluir Conta</button>
     </form>
   </div>
-</div>
-<div class="card-acao">
-  <form action="/logout" method="POST">
-    <button type="submit">Sair</button>
+
+  <div class="card-acao">
+    <form action="/logout" method="POST">
+      <button type="submit" class="btn-perigo">Sair</button>
+    </form>
+  </div>
+
 </div>

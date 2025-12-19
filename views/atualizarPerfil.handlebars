@@ -1,22 +1,27 @@
-<div class="main-container form-card">
+<div class="app-page">
 
-  <h4 class="text-white text-center mb-3">Atualizar Perfil</h4>
+  <div class="card">
 
-  <form action="/atualizar" method="POST" enctype="multipart/form-data">
+    <h3 class="card-titulo">Atualizar Perfil</h3>
 
-    <label>Foto de perfil</label>
-    <input type="file" name="fotoPerfil" class="form-control">
+    <form action="/atualizar" method="POST" enctype="multipart/form-data" class="form-padrao">
 
-    <label>Nome</label>
-    <input type="text" name="cadastroNome" class="form-control">
+      <label>Foto de perfil</label>
+      <input type="file" name="fotoPerfil">
 
-    <label>Email</label>
-    <input type="email" name="cadastroEmail" class="form-control">
+      <label>Nome</label>
+      <input type="text" name="cadastroNome" value="{{usuario.nome}}">
 
-    <label>Nova Senha</label>
-    <input type="password" name="cadastroSenha" class="form-control">
+      <label>Email</label>
+      <input type="email" name="cadastroEmail" value="{{usuario.email}}">
 
-    <button class="btn btn-white mt-2">Salvar</button>
-  </form>
+      <label>Nova Senha</label>
+      <input type="password" name="cadastroSenha">
+
+      <button type="submit" class="btn-principal">Salvar</button>
+
+    </form>
+
+  </div>
 
 </div>
