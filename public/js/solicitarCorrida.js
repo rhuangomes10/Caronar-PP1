@@ -1,109 +1,168 @@
+// ================== VARIÁVEIS GLOBAIS ==================
 let mapa;
 let marcadorPartida;
 let marcadorChegada;
+let rotaControl;
 
-let partida = {};
-let chegada = {};
-let distanciaKm = 0;
+let estado = {
+  partida: null,
+  chegada: null,
+};
 
-// Inicializa mapa
-mapa = L.map("mapa").setView([-8.0476, -34.8770], 13);
+// ================== INICIAR MAPA ==================
+document.addEventListener("DOMContentLoaded", () => {
+  mapa = L.map("mapa").setView([-8.0476, -34.877], 14);
 
-// Tile OpenStreetMap
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap",
-}).addTo(mapa);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap",
+  }).addTo(mapa);
 
-// Localização atual
-navigator.geolocation.getCurrentPosition((pos) => {
-  partida.lat = pos.coords.latitude;
-  partida.lng = pos.coords.longitude;
-
-  marcadorPartida = L.marker([partida.lat, partida.lng])
-    .addTo(mapa)
-    .bindPopup("Sua localização")
-    .openPopup();
-
-  mapa.setView([partida.lat, partida.lng], 15);
-
-  document.getElementById("partida").value = "Localização atual";
+  obterLocalizacao();
+  avancar();
 });
 
-// Clique no mapa = chegada
-mapa.on("click", (e) => {
-  chegada.lat = e.latlng.lat;
-  chegada.lng = e.latlng.lng;
+// ================== LOCALIZAÇÃO ATUAL ==================
+function obterLocalizacao() {
+  if (!navigator.geolocation) {
+    alert("Geolocalização não suportada");
+    return;
+  }
 
-  if (marcadorChegada) mapa.removeLayer(marcadorChegada);
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
 
-  marcadorChegada = L.marker([chegada.lat, chegada.lng])
-    .addTo(mapa)
-    .bindPopup("Destino")
-    .openPopup();
+      estado.partida = { lat, lng };
 
-  distanciaKm = calcularDistancia(
-    partida.lat,
-    partida.lng,
-    chegada.lat,
-    chegada.lng
+      marcadorPartida = L.marker([lat, lng])
+        .addTo(mapa)
+        .bindPopup("Você está aqui")
+        .openPopup();
+
+      mapa.setView([lat, lng], 15);
+
+      // Nome da rua/cidade
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+      );
+      const data = await res.json();
+
+      document.getElementById("partida").value = data.display_name;
+
+      const cidade = document.getElementById("cidade");
+
+      const endereco = data.address;
+
+      // tenta pegar cidade, depois town, depois village
+      cidade.innerHTML =
+        endereco.city ||
+        endereco.town ||
+        endereco.village ||
+        endereco.municipality ||
+        "Cidade não encontrada";
+
+      localStorage.setItem("corrida", JSON.stringify(estado));
+    },
+    () => alert("Permita o acesso à localização")
   );
-
-  document.getElementById("chegada").value =
-    chegada.lat.toFixed(4) + ", " + chegada.lng.toFixed(4);
-
-  buscarTransportes(distanciaKm);
-});
-
-// Haversine
-function calcularDistancia(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) *
-      Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) ** 2;
-
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-// Busca preços
-async function buscarTransportes(distancia) {
-  const res = await fetch("/calcular-precos", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ distanciaKm: distancia }),
+// ================== BUSCAR DESTINO ==================
+document
+  .getElementById("selecionarLocal")
+  .addEventListener("click", async () => {
+    const destinoTexto = document.getElementById("chegada").value.trim();
+    if (!destinoTexto) {
+      alert("Digite um destino");
+      return;
+    }
+
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        destinoTexto
+      )}`
+    );
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      alert("Destino não encontrado");
+      return;
+    }
+
+    const lat = parseFloat(data[0].lat);
+    const lng = parseFloat(data[0].lon);
+
+    estado.chegada = { lat, lng };
+
+    if (marcadorChegada) mapa.removeLayer(marcadorChegada);
+
+    marcadorChegada = L.marker([lat, lng])
+      .addTo(mapa)
+      .bindPopup("Destino")
+      .openPopup();
+
+    desenharRota();
+
+    localStorage.setItem("corrida", JSON.stringify(estado));
   });
 
-  const transportes = await res.json();
-  mostrarTransportes(transportes);
+// ================== DESENHAR ROTA ==================
+function desenharRota() {
+  if (!estado.partida || !estado.chegada) return;
+
+  if (rotaControl) {
+    mapa.removeControl(rotaControl);
+  }
+
+  rotaControl = L.Routing.control({
+    waypoints: [
+      L.latLng(estado.partida.lat, estado.partida.lng),
+      L.latLng(estado.chegada.lat, estado.chegada.lng),
+    ],
+    routeWhileDragging: false,
+    addWaypoints: false,
+    draggableWaypoints: false,
+    show: false,
+  }).addTo(mapa);
+
+  const from = L.latLng(estado.partida.lat, estado.partida.lng);
+  const to = L.latLng(estado.chegada.lat, estado.chegada.lng);
+
+  estado.distanciaKm = from.distanceTo(to) / 1000;
+
+  localStorage.setItem("corrida", JSON.stringify(estado));
 }
 
-// Mostra opções
-function mostrarTransportes(lista) {
-  const container = document.getElementById("opcoes");
-  container.innerHTML = "";
+function avancar() {
+  document.getElementById("confirmarCorrida")?.addEventListener("click", () => {
+    const path = location.pathname;
 
-  lista.forEach((t) => {
-    const div = document.createElement("div");
-    div.className = "opcao";
-    div.innerHTML = `<strong>${t.nome}</strong> <span>R$ ${t.preco}</span>`;
-    div.onclick = () => selecionarTransporte(t.tipo, t.preco);
-    container.appendChild(div);
+    if (path.includes("solicitarCorrida")) {
+      location.href = "/meioTransporte";
+      return;
+    }
+
+    if (path.includes("meioTransporte")) {
+      location.href = "/motoristaEncontrado";
+      return;
+    }
+
+    if (path.includes("motoristaEncontrado")) {
+      location.href = "/pagamento";
+    }
   });
-}
 
-// Seleciona transporte
-function selecionarTransporte(tipo, preco) {
-  localStorage.setItem("corrida", JSON.stringify({
-    partida,
-    chegada,
-    distanciaKm,
-    tipo,
-    preco
-  }));
+  document
+    .getElementById("pagarCorrida")
+    ?.addEventListener("click", async () => {
+      await fetch("/finalizar-corrida", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(estado),
+      });
 
-  window.location.href = "/confirmarCorrida";
+      localStorage.removeItem("corrida");
+      location.href = "/index";
+    });
 }

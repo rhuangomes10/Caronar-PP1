@@ -1,18 +1,17 @@
 <div class="corrida-container">
 
   <div class="campo">
-    <input type="text" id="partida" placeholder="Partida" readonly>
+    <input type="text" id="partida" placeholder="Localização atual" readonly />
   </div>
 
-  <div class="campo">
-    <input type="text" id="chegada" placeholder="Chegada">
+  <div class="campo campo-destino">
+    <input type="text" id="chegada" placeholder="Para onde você vai?" />
+    <button id="selecionarLocal">Buscar</button>
   </div>
 
   <div id="mapa"></div>
-
-  <div class="info-corrida">
-    <span id="tempo">--:--</span>
-    <span id="cidade">---</span>
-  </div>
+<button id="confirmarCorrida">Confirmar</button>
 
 </div>
+
+<script src="/js/solicitarCorrida.js"></script>

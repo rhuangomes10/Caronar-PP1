@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Caronar</title>
+
+  <link rel="stylesheet" href="/style/style.css">
+  <link rel="stylesheet" href="/style/solicitarCorrida.css">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+</head>
+
+<body>
+
+  <div class="corrida-layout">
+    {{{body}}}
+
+    <!-- RODAPÉ ÚNICO -->
+    <div class="corrida-container">
+       <div class="corrida-footer">
+      <div class="info-corrida">
+        <span id="tempo"></span>
+        <span id="cidade"></span>
+      </div>
+    </div>
+  </div>
+    </div>
+
+  <script>
+    const tempo = document.getElementById("tempo");
+    setInterval(() => {
+      tempo.innerHTML = new Date().toLocaleTimeString("pt-BR");
+    }, 1000);
+  </script>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+  <script src="/js/solicitarCorrida.js" defer></script>
+
+</body>
+</html>
