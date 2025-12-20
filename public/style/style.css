@@ -176,3 +176,7 @@ body {
   padding-bottom: 90px;
 }
 
+body a{
+  text-decoration: none;
+  color: inherit
+}
