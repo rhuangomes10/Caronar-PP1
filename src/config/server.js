@@ -329,7 +329,7 @@ app.post(
   express.json(),
   async (req, res) => {
     try {
-      const { partida, chegada, distanciaKm, tipo, preco } = req.body;
+      const { cidadePartida, cidadeChegada, distanciaKm, tipo, preco } = req.body;
 
       const motorista = motoristas[tipo];
 
@@ -339,8 +339,8 @@ app.post(
 
       await Corrida.create({
         usuarioId: req.session.usuarioId,
-        partida: "Localização atual",
-        chegada: chegada.nome || `${chegada.lat}, ${chegada.lng}`,
+        partida: cidadePartida,
+        chegada: cidadeChegada,
         distanciaKm,
         tipoTransporte: tipo,
         preco,

@@ -7,6 +7,8 @@ let rotaControl;
 let estado = {
   partida: null,
   chegada: null,
+  cidadePartida: null,
+  cidadeChegada: null,
 };
 
 // ================== INICIAR MAPA ==================
@@ -62,6 +64,8 @@ function obterLocalizacao() {
         endereco.municipality ||
         "Cidade não encontrada";
 
+        estado.cidadePartida = endereco.city || endereco.town || endereco.village || endereco.municipality;
+
       localStorage.setItem("corrida", JSON.stringify(estado));
     },
     () => alert("Permita o acesso à localização")
@@ -79,7 +83,7 @@ document
     }
 
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+      `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(
         destinoTexto
       )}`
     );
@@ -94,6 +98,8 @@ document
     const lng = parseFloat(data[0].lon);
 
     estado.chegada = { lat, lng };
+
+    estado.cidadeChegada = data[0].address.city || data[0].address.town || data[0].address.village || data[0].address.municipality ;
 
     if (marcadorChegada) mapa.removeLayer(marcadorChegada);
 
